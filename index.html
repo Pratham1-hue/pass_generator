@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Event Delhi — Community Pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  :root {
+    --bg-main: #fff7ed;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --text-dark: #1e140f;
+    --text-muted: #785a4a;
+    --accent-1: #f97316; 
+    --accent-2: #ea580c; 
+    --accent-3: #fdba74; 
+    --border-light: rgba(249, 115, 22, 0.2);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(234, 88, 12, 0.1) 0px, transparent 50%);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-dark);
+    padding: 30px 20px 80px;
+  }
+
+  .app { max-width: 650px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-light);
+  }
+  .logo { font-family: 'Press Start 2P', monospace; font-size: 14px; color: var(--text-dark); }
+  .logo span { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .tagline { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 6px; }
+
+  .panel {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(234, 88, 12, 0.05), inset 0 0 0 1px rgba(255,255,255,0.5);
+    margin-bottom: 25px;
+  }
+  .panel h2 { font-family: 'Press Start 2P', monospace; font-size: 14px; margin: 0 0 24px; color: var(--accent-2); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .full-width { grid-column: 1 / -1; }
+  label { display: block; font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+  input, select { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.9); border: 2px solid var(--border-light); border-radius: 10px; color: var(--text-dark); font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  input:focus, select:focus { border-color: var(--accent-1); background: #fff; box-shadow: 4px 4px 0px rgba(249, 115, 22, 0.15); transform: translateY(-2px); }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  .btn { width: 100%; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 18px; padding: 16px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; margin-top: 20px; }
+  .btn:active { transform: scale(0.98); }
+  .btn-submit { background: var(--accent-1); color: white; border: 2px solid var(--accent-2); box-shadow: 4px 4px 0px var(--accent-2); }
+  .btn-submit:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--accent-2); }
+  .btn-action { background: #fff; color: var(--text-dark); border: 2px solid var(--text-dark); margin-top: 15px; box-shadow: 4px 4px 0px var(--text-dark); }
+  .btn-action:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--text-dark); }
+
+  /* ---------- Ticket Section ---------- */
+  #ticketSection {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+  .badge-wrapper { position: relative; padding-top: 30px; margin-bottom: 20px; }
+
+  .lanyard-strap { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 60px; height: 50px; background: repeating-linear-gradient(135deg, var(--accent-2) 0 10px, var(--accent-1) 10px 20px); border-radius: 8px 8px 0 0; z-index: 0; }
+
+  .badge {
+    position: relative;
+    width: min(360px, 100%);
+    background-color: #ffffff;
+    background-image: url('Background.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 24px;
+    padding: 35px 30px 25px;
+    text-align: center;
+    z-index: 1;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 0 2px rgba(249, 115, 22, 0.2);
+    overflow: hidden;
+  }
+
+  .badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--accent-3) 1.5px, transparent 1.5px);
+    background-size: 18px 18px;
+    opacity: 0.3;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .badge > * { position: relative; z-index: 1; }
+
+  .lanyard-hole { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 60px; height: 12px; border-radius: 10px; background: rgba(255,255,255,0.9); box-shadow: inset 0 4px 6px rgba(0,0,0,0.2); }
+
+  .badge-header { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 20px; border-bottom: 2px dashed rgba(249, 115, 22, 0.4); padding-bottom: 12px; }
+  .pass-id { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #fff; background: var(--accent-2); padding: 6px 10px; border-radius: 6px; box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+
+  /* Upgraded 3D Graphic Avatar Container */
+  .avatar-display {
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 4px solid var(--text-dark);
+    box-shadow: 6px 6px 0px var(--accent-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transform: rotate(-3deg);
+  }
+  .avatar-display svg { width: 65px; height: 65px; }
+
+  .badge-name { font-family: 'Press Start 2P', monospace; font-size: 18px; color: var(--text-dark); margin: 0 0 12px; line-height: 1.4; text-shadow: 2px 2px 0px rgba(249, 115, 22, 0.2); word-wrap: break-word; }
+  .badge-handle { display: inline-block; font-size: 15px; font-weight: 800; color: #fff; background: var(--accent-1); padding: 4px 14px; border-radius: 20px; border: 2px solid var(--accent-2); margin-bottom: 6px; box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+  .badge-email { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px; font-style: italic; }
+
+  .nickname-block {
+    background: #fff;
+    border: 2px solid var(--text-dark);
+    box-shadow: 4px 4px 0px var(--accent-1);
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    transform: rotate(-1.5deg);
+  }
+  .nickname-title { font-size: 15px; font-weight: 800; color: var(--accent-2); margin-bottom: 4px; text-transform: uppercase; }
+  .nickname-sub { font-size: 13px; color: var(--text-dark); font-weight: 600; }
+
+  .meta-tags { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .meta-tag { background: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; color: var(--text-dark); border: 2px solid var(--text-dark); box-shadow: 3px 3px 0px var(--accent-3); }
+
+  .badge-footer-text {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent-2);
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .barcode { width: 100%; height: 40px; background: repeating-linear-gradient( 90deg, var(--text-dark), var(--text-dark) 3px, transparent 3px, transparent 7px, var(--text-dark) 7px, var(--text-dark) 10px, transparent 10px, transparent 14px ); opacity: 0.9; border-radius: 4px; }
+
+  .action-group { display: flex; gap: 10px; width: 100%; max-width: 360px; }
+
+  /* ---------- Database Dashboard ---------- */
+  .db-panel {
+    background: #fff;
+    border: 2px solid var(--text-dark);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
+    margin-top: 40px;
+  }
+  .db-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .db-header h3 {
+    margin: 0;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: var(--text-dark);
+  }
+  .db-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .db-count {
+    background: var(--accent-1);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .btn-excel {
+    background: #107c41;
+    color: white;
+    border: 2px solid var(--text-dark);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--text-dark);
+    transition: all 0.2s;
+  }
+  .btn-excel:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0px var(--text-dark); }
+
+  .db-table-wrapper {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  th {
+    background: #fff7ed;
+    color: var(--accent-2);
+    font-weight: 800;
+    position: sticky;
+    top: 0;
+  }
+  tr:hover { background: #fafaf9; }
+  tr.row-highlight { animation: rowFlash 1.4s ease; }
+  @keyframes rowFlash { 0% { background: #ffedd5; } 100% { background: transparent; } }
+
+  .db-panel { transition: box-shadow 0.2s ease; }
+
+  /* ---------- Toasts ---------- */
+  #toastHost { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 999; width: min(360px, calc(100vw - 40px)); align-items: center; }
+  .toast { display: flex; align-items: center; gap: 10px; background: var(--text-dark); color: #fff; font-weight: 700; font-size: 14px; padding: 12px 18px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.1); animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  .toast.success { background: var(--accent-2); }
+  .toast.info { background: var(--text-dark); }
+  .toast.fade-out { animation: toastOut 0.3s ease forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div>
+      <div class="logo">⌁ CLAUDE EVENT <span>DELHI</span></div>
+      <div class="tagline">Build your community pass in seconds</div>
+    </div>
+  </header>
+
+  <!-- FORM SECTION -->
+  <section class="panel" id="formSection">
+    <h2>REGISTER PASS</h2>
+    
+    <div class="form-grid">
+      <div class="full-width">
+        <label>Attendee Name</label>
+        <input type="text" id="nameInput" maxlength="18" required>
+      </div>
+
+      <div class="full-width">
+        <label>Email</label>
+        <input type="email" id="emailInput" required>
+      </div>
+
+      <div>
+        <label>Social Handle</label>
+        <input type="text" id="handleInput">
+      </div>
+
+      <div>
+        <label>Work Category</label>
+        <select id="workInput">
+          <option value="Developer">Developer</option>
+          <option value="Designer">Designer</option>
+          <option value="Data Scientist">Data Scientist</option>
+          <option value="Product Manager">Product Manager</option>
+          <option value="Student">Student</option>
+        </select>
+      </div>
+
+      <div class="full-width">
+        <label>Location</label>
+        <input type="text" id="locInput" placeholder="e.g. New Delhi, India">
+      </div>
+    </div>
+
+    <button class="btn btn-submit" id="submitBtn">Generate My Pass ✨</button>
+  </section>
+
+  <!-- TICKET SECTION -->
+  <section id="ticketSection">
+    <div class="badge-wrapper" id="captureArea">
+      <div class="lanyard-strap"></div>
+      
+      <div class="badge" id="badge">
+        <div class="lanyard-hole"></div>
+        
+        <div class="badge-header">
+          <div style="font-weight: 800; font-size: 12px; color: var(--accent-2); letter-spacing: 1px;">EVENT PASS</div>
+          <div class="pass-id" id="passId">CED-0000</div>
+        </div>
+
+        <div class="avatar-display" id="badgeAvatar"></div>
+
+        <div class="badge-name" id="badgeName">NAME</div>
+        <div class="badge-handle" id="badgeHandle">@handle</div>
+        <div class="badge-email" id="badgeEmail">email@example.com</div>
+
+        <div class="nickname-block">
+          <div class="nickname-title" id="nicknameTitle">Loading...</div>
+          <div class="nickname-sub" id="nicknameSub">...</div>
+        </div>
+
+        <div class="meta-tags">
+          <div class="meta-tag" id="badgeWork">Role</div>
+          <div class="meta-tag" id="badgeLoc">Location</div>
+        </div>
+
+        <div class="badge-footer-text">Claude Community Delhi</div>
+
+        <div class="barcode"></div>
+      </div>
+    </div>
+    
+    <div class="action-group">
+      <button class="btn btn-action" id="downloadBtn">⭳ Save Image</button>
+      <button class="btn btn-action" id="backBtn" style="flex: 0.5;">✎ Edit</button>
+    </div>
+  </section>
+
+  <!-- LIVE EXCEL / DATABASE DASHBOARD -->
+  <section class="db-panel">
+    <div class="db-header">
+      <h3>REGISTRATION DATABASE</h3>
+      <div class="db-actions">
+        <div class="db-count" id="dbCount">0 Entries</div>
+        <button class="btn-excel" id="exportExcelBtn">📊 Download Excel (.xlsx)</button>
+      </div>
+    </div>
+    <div class="db-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Pass ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody id="dbTableBody">
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div id="toastHost" aria-live="polite"></div>
+
+<script>
+  // Fully embedded reliable SVG markup avatars (No external network failures)
+  const techAvatars = [
+    // Robot
+    `<svg viewBox="0 0 24 24" fill="#ea580c"><path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22V18H21A7,7 0 0,1 14,25H10A7,7 0 0,1 3,18H2V14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,10A1.5,1.5 0 0,0 6,11.5A1.5,1.5 0 0,0 7.5,13A1.5,1.5 0 0,0 9,11.5A1.5,1.5 0 0,0 7.5,10M16.5,10A1.5,1.5 0 0,0 15,11.5A1.5,1.5 0 0,0 16.5,13A1.5,1.5 0 0,0 18,11.5A1.5,1.5 0 0,0 16.5,10M10,17V19H14V17H10Z"/></svg>`,
+    // Code / Terminal
+    `<svg viewBox="0 0 24 24" fill="#ea580c"><path d="M20,19V7H4V19H20M20,3A2,2 0 0,1 22,5V19A2,2 0 0,1 20,21H4A2,2 0 0,1 2,19V5C2,3.89 2.9,3 4,3H20M8.59,13.58L7.17,15L3.17,11L7.17,7L8.59,8.41L6,11L8.59,13.58M11,15V13H17V15H11Z"/></svg>`,
+    // Alien
+    `<svg viewBox="0 0 24 24" fill="#10b981"><path d="M12,2C6.5,2 2,6.5 2,12C2,15.8 4.2,19.1 7.4,20.6C7.2,19.5 7.1,18.1 7.4,17C7.8,15.4 9.1,14.3 10,13C9.3,12 8.7,10.7 9,9.5C9.3,8.2 10.6,8 12,8C13.4,8 14.7,8.2 15,9.5C15.3,10.7 14.7,12 14,13C14.9,14.3 16.2,15.4 16.6,17C16.9,18.1 16.8,19.5 16.6,20.6C19.8,19.1 22,15.8 22,12C22,6.5 17.5,2 12,2Z"/></svg>`,
+    // Rocket
+    `<svg viewBox="0 0 24 24" fill="#f43f5e"><path d="M2.81,14.12L5.64,11.29L8.17,13.82L5.34,16.65L2.81,14.12M18.19,5.88L15.36,8.71L12.83,6.18L15.66,3.35L18.19,5.88M12,2C14.5,2 19,4 21,8C22,10 22,12 21,14C20,16 18,17 17,17V21L15,19L13,21V17H11C8,17 6,15 4,13C3,11 3,9 4,7C6,5 8,2 12,2Z"/></svg>`,
+    // Lightning / Flash
+    `<svg viewBox="0 0 24 24" fill="#f59e0b"><path d="M11 15H6L13 1V9H18L11 23V15Z"/></svg>`,
+    // Fire
+    `<svg viewBox="0 0 24 24" fill="#ef4444"><path d="M17.56 14.7C19.35 12.58 19.34 9.4 17.37 7.33C16.5 6.43 15.43 5.8 14.32 5.37C14.17 6.4 13.78 7.36 13.15 8.16C12.54 8.94 11.75 9.56 10.87 9.97C10.15 7.6 10.12 5.09 10.81 2.71C7.75 4.3 5.75 7.42 5.75 11C5.75 15.56 9.44 19.25 14 19.25C14.32 19.25 14.64 19.23 14.95 19.17C13.8 19.9 12.44 20.25 11 20.25C7.13 20.25 4 17.12 4 13.25C4 9.77 6.47 6.87 9.81 6.16C10.13 7.85 10.9 9.46 12.06 10.75C13.04 11.83 14.28 12.63 15.68 13.12C16.32 13.34 16.96 13.97 17.56 14.7Z"/></svg>`,
+    // Diamond
+    `<svg viewBox="0 0 24 24" fill="#06b6d4"><path d="M6,2L2,8L12,22L22,8L18,2H6M12,4L15,8H9L12,4M5.5,10H11.5V18.5L5.5,10M12.5,18.5V10H18.5L12.5,18.5Z"/></svg>`,
+    // Controller / Gaming
+    `<svg viewBox="0 0 24 24" fill="#8b5cf6"><path d="M21,6H3A2,2 0 0,0 1,8V16A2,2 0 0,0 3,18H21A2,2 0 0,0 23,16V8A2,2 0 0,0 21,6M21,16H3V8H21V16M6,15H8V13H10V11H8V9H6V11H4V13H6V15M14.5,13.5C14.5,14.33 13.83,15 13,15C12.17,15 11.5,14.33 11.5,13.5C11.5,12.67 12.17,12 13,12C13.83,12 14.5,12.67 14.5,13.5M18.5,11.5C18.5,12.33 17.83,13 17,13C16.17,13 15.5,12.33 15.5,11.5C15.5,10.67 16.17,10 17,10C17.83,10 18.5,10.67 18.5,11.5Z"/></svg>`
+  ];
+
+  const nicknames = [
+    { title: "Dilli Ka Jugaad Architect", sub: "Production bug? Chai to the rescue." },
+    { title: "Stack Overflow Ka Deewana", sub: "Ctrl+C, Ctrl+V, aur Bhagwan pe bharosa." },
+    { title: "Localhost Ka Raja", sub: "Works perfectly on my machine." },
+    { title: "Debugging Ninja", sub: "Silent but deadly to syntax errors." },
+    { title: "Metro Waitlist Survivor", sub: "Stuck at Rajiv Chowk queues." },
+    { title: "Prompt Whisperer", sub: "Talks to Claude better than humans." }
+  ];
+
+  const formSection = document.getElementById('formSection');
+  const ticketSection = document.getElementById('ticketSection');
+  const submitBtn = document.getElementById('submitBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const backBtn = document.getElementById('backBtn');
+  const exportExcelBtn = document.getElementById('exportExcelBtn');
+  const dbTableBody = document.getElementById('dbTableBody');
+  const dbCount = document.getElementById('dbCount');
+  const badgeAvatar = document.getElementById('badgeAvatar');
+  const toastHost = document.getElementById('toastHost');
+
+  let registrations = JSON.parse(localStorage.getItem('claude_pass_db')) || [];
+  let lastTouchedPassId = null;
+
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toastHost.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }, 2800);
+  }
+
+  function renderDatabase() {
+    dbTableBody.innerHTML = '';
+    dbCount.textContent = `${registrations.length} Entries`;
+    
+    if(registrations.length === 0) {
+      dbTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No entries yet. Fill out the form above!</td></tr>`;
+      return;
+    }
+
+    registrations.slice().reverse().forEach(reg => {
+      const tr = document.createElement('tr');
+      if (reg.passId === lastTouchedPassId) tr.classList.add('row-highlight');
+      tr.innerHTML = `
+        <td><strong style="color:var(--accent-2);">${reg.passId}</strong></td>
+        <td>${reg.name}</td>
+        <td>${reg.email}</td>
+        <td>${reg.work}</td>
+        <td>${reg.location}</td>
+      `;
+      dbTableBody.appendChild(tr);
+    });
+  }
+
+  submitBtn.addEventListener('click', () => {
+    const name = document.getElementById('nameInput').value.trim();
+    const emailRaw = document.getElementById('emailInput').value.trim();
+    const email = emailRaw.toLowerCase();
+    if (!name || !email) return showToast("Please enter both your name and email address!", 'info');
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) return showToast("That email address doesn't look right — please check it.", 'info');
+
+    let handle = document.getElementById('handleInput').value.trim() || '@attendee';
+    if (!handle.startsWith('@')) handle = '@' + handle;
+    const work = document.getElementById('workInput').value;
+    const location = document.getElementById('locInput').value.trim() || 'New Delhi';
+
+    // Assign a completely random tech avatar automatically on submission
+    const randomAvatar = techAvatars[Math.floor(Math.random() * techAvatars.length)];
+
+    const existingIndex = registrations.findIndex(r => r.email.toLowerCase() === email);
+    const isUpdate = existingIndex !== -1;
+    const passIdCode = isUpdate ? registrations[existingIndex].passId : ('CED-' + Math.floor(1000 + Math.random() * 9000));
+
+    const updatedEntry = { passId: passIdCode, name, email, work, location, avatar: randomAvatar };
+
+    if (isUpdate) {
+      registrations.splice(existingIndex, 1);
+    }
+    registrations.push(updatedEntry);
+    localStorage.setItem('claude_pass_db', JSON.stringify(registrations));
+    lastTouchedPassId = passIdCode;
+    renderDatabase();
+
+    badgeAvatar.innerHTML = randomAvatar;
+
+    const nick = nicknames[Math.floor(Math.random() * nicknames.length)];
+    document.getElementById('nicknameTitle').textContent = nick.title;
+    document.getElementById('nicknameSub').textContent = `"${nick.sub}"`;
+
+    document.getElementById('badgeName').textContent = name.toUpperCase();
+    document.getElementById('badgeHandle').textContent = handle;
+    document.getElementById('badgeEmail').textContent = emailRaw;
+    document.getElementById('badgeWork').textContent = work;
+    document.getElementById('badgeLoc').textContent = location;
+    document.getElementById('passId').textContent = passIdCode;
+
+    showToast(isUpdate ? "Welcome back! Your existing pass was updated." : "Pass created with a random avatar — welcome aboard!", 'success');
+
+    formSection.style.display = 'none';
+    ticketSection.style.display = 'flex';
+  });
+
+  backBtn.addEventListener('click', () => {
+    ticketSection.style.display = 'none';
+    formSection.style.display = 'block';
+  });
+
+  exportExcelBtn.addEventListener('click', () => {
+    if (registrations.length === 0) {
+      return alert("No database entries available to export yet!");
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(registrations);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+    XLSX.writeFile(workbook, "Claude_Event_Delhi_Registrations.xlsx");
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    const captureArea = document.getElementById('captureArea');
+    downloadBtn.textContent = "Wait...";
+    
+    html2canvas(captureArea, {
+      backgroundColor: null,
+      scale: 3, 
+      logging: false,
+      useCORS: true
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'Claude_Event_Pass.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      downloadBtn.textContent = "⭳ Save Image";
+
+      showToast("Pass downloaded! Taking you back to the form...", 'success');
+
+      // Return to the registration form after the download completes
+      setTimeout(() => {
+        ticketSection.style.display = 'none';
+        formSection.style.display = 'block';
+        document.getElementById('nameInput').value = '';
+        document.getElementById('emailInput').value = '';
+        document.getElementById('handleInput').value = '';
+        document.getElementById('locInput').value = '';
+        document.getElementById('workInput').selectedIndex = 0;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 1200);
+    }).catch(err => {
+      console.error(err);
+      alert("Oops! Something went wrong.");
+      downloadBtn.textContent = "⭳ Save Image";
+    });
+  });
+
+  renderDatabase();
+</script>
+
+</body>
+</html>
